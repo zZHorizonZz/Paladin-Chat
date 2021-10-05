@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BAD36C4E-A007-461F-95F4-D3718E8C9608}</ProjectGuid>
+    <ProjectGuid>{14C7AD10-6654-4E6B-9A07-A8C9F4CE521E}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Paladin</RootNamespace>
-    <AssemblyName>Paladin</AssemblyName>
+    <RootNamespace>Server</RootNamespace>
+    <AssemblyName>Server</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -32,9 +32,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>Paladin.Paladin</StartupObject>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="PacketLibrary, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\PacketLibrary.1.2.3\lib\netstandard2.0\PacketLibrary.dll</HintPath>
@@ -49,17 +46,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Paladin.cs" />
+    <Compile Include="client\Client.cs" />
+    <Compile Include="client\ClientContainer.cs" />
     <Compile Include="PacketPing.cs" />
-    <Compile Include="PacketPingHandler.cs" />
     <Compile Include="PacketPong.cs" />
+    <Compile Include="PacketPongHandler.cs" />
+    <Compile Include="packet\server\PacketHandshake.cs" />
     <Compile Include="PingCodec.cs" />
     <Compile Include="PongCodec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server.cs" />
+    <Compile Include="ServerManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="packet\client\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
