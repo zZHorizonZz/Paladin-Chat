@@ -1,20 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Server.client
 {
     class ClientContainer
     {
-        private readonly IDictionary<string, Client> _clientMap = new Dictionary<string, Client>();
+        private readonly IDictionary<string, Client.Client> _clientMap = new Dictionary<string, Client.Client>();
 
-        public Client AddClient(string name)
+        public Client.Client AddClient(Guid uuid, string name)
         {
-            Client client = _clientMap[name];
-            if (client != null)
+            if (_clientMap.ContainsKey(name))
             {
-                return client;
+                return _clientMap[name];
             }
 
-            client = new Client(name);
+            Client.Client client = new Client.Client(uuid, name);
             _clientMap.Add(name, client);
             return client;
         }
@@ -34,7 +34,7 @@ namespace Server.client
             return _clientMap.Count;
         }
 
-        public IDictionary<string, Client> GetClientMap()
+        public IDictionary<string, Client.Client> GetClientMap()
         {
             return _clientMap;
         }

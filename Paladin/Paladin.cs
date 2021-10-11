@@ -1,4 +1,5 @@
-﻿using PacketLibrary.Network;
+﻿using Client.Network;
+using PacketLibrary.Logging;
 using System;
 using System.Net.Sockets;
 
@@ -6,22 +7,32 @@ namespace Paladin
 {
     class Paladin
     {
+        public static readonly Logger Logger = Logger.LOGGER;
+
         static void Main(string[] args)
         {
+
+            Client.Client client = new Client.Client(Guid.NewGuid(), "Paladin");
+
             try
             {
-                ClientBootstrap client = new ClientBootstrap(20000);
-                DefaultConnection connection = new DefaultConnection(new SimpleProtocol(), client.Connect());
-                connection.GetCurrentProtocol().ProtocolRegistry.RegisterInboundWithHandler(0x00, new PingCodec(), new PacketPing().GetType(), new PacketPingHandler());
-                connection.GetCurrentProtocol().ProtocolRegistry.RegisterOutbound(0x01, new PongCodec(), new PacketPong().GetType());
+                client.Connect(20000);
 
-                NetworkStream stream = connection.GetClient().GetStream();
+                client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterInboundWithHandler(0x00, new PingCodec(), new PacketPing().GetType(), new PacketPingHandler());
+                client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterInboundWithHandler(0x01, new PacketResponse(), new PacketResponse().GetType(), new PacketResponse());
+                client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterOutbound(0x00, new PongCodec(), new PacketPong().GetType());
+                client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterOutbound(0x01, new PacketRequest(), new PacketRequest().GetType());
 
                 System.Threading.Thread.Sleep(1000);
-                Console.WriteLine("Reading packet...");
-                connection.Read();
 
-                stream.Close();
+                client.Connection.SendPacket(new PacketRequest(client.Name, client.Uuid));
+                Logger.Info("Request to connect to server has been successfully sent. Awaiting response...");
+
+                while (client.Connection.GetClient().Connected)
+                {
+                    client.Connection.Read();
+                    System.Threading.Thread.Sleep(2000);
+                }
             }
             catch (ArgumentNullException exception)
             {
@@ -30,6 +41,10 @@ namespace Paladin
             catch (SocketException exception)
             {
                 Console.WriteLine("SocketException: {0}", exception);
+            }
+            finally
+            {
+                client.Connection.GetClient().Close();
             }
 
             Console.WriteLine("\n Press Enter to continue...");

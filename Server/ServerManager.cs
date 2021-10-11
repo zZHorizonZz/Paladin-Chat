@@ -1,6 +1,8 @@
-﻿using PacketLibrary.Logging;
+﻿using Client;
+using PacketLibrary.Logging;
 using PacketLibrary.Network;
 using Server.client;
+using Server.Network;
 using System;
 using System.Net.Sockets;
 
@@ -9,53 +11,55 @@ namespace Server
     class ServerManager
     {
         public static readonly Logger Logger = Logger.LOGGER;
+        public static ServerManager Instance;
 
-        public string name = "Default Server";
-        public ClientContainer ClientContainer;
+        public string Name = "Default Server";
+        public bool Public = true;
 
+        public ConnectionHandler ConnectionHandler;
+        public ClientHandler ClientHandler = new ClientHandler();
+        public ClientContainer ClientContainer = new ClientContainer();
+
+        public ServerBootstrap Bootstrap;
         public ServerManager()
         {
-            ClientContainer = new ClientContainer();
+            Instance = this;
         }
 
-        void Start()
+        public void Start()
         {
             Logger.Info("Server is now booting...");
-            ServerBootstrap bootstrap = new ServerBootstrap("127.0.0.1", 20000);
-            bootstrap.DefaultProtocol.ProtocolRegistry.RegisterOutbound(0x00, new PingCodec(), new PacketPing().GetType());
-            bootstrap.DefaultProtocol.ProtocolRegistry.RegisterInboundWithHandler(0x01, new PongCodec(), new PacketPong().GetType(), new PacketPongHandler());
+            Bootstrap = new ServerBootstrap("127.0.0.1", 20000);
 
-            if (bootstrap.DefaultProtocol.ProtocolRegistry.GetPacketHandler(new PacketPong().GetType()) == null)
+            Bootstrap.DefaultProtocol.ProtocolRegistry.RegisterOutbound(0x00, new PingCodec(), new PacketPing().GetType());
+            Bootstrap.DefaultProtocol.ProtocolRegistry.RegisterOutbound(0x01, new PacketResponse(), new PacketResponse().GetType());
+            Bootstrap.DefaultProtocol.ProtocolRegistry.RegisterInboundWithHandler(0x00, new PongCodec(), new PacketPong().GetType(), new PacketPongHandler());
+            Bootstrap.DefaultProtocol.ProtocolRegistry.RegisterInboundWithHandler(0x01, new PacketRequest(), new PacketRequest().GetType(), new PacketRequest());
+
+            if (Bootstrap.DefaultProtocol.ProtocolRegistry.GetPacketHandler(new PacketPong().GetType()) == null)
             {
                 Logger.Warn("Something went wrong...");
             }
 
             Logger.Info("Server bootstrap has been successfully created.");
 
-            TcpListener listener = bootstrap.Start();
+            TcpListener listener = Bootstrap.Start();
+            ConnectionHandler = new ConnectionHandler();
 
             try
             {
                 while (true)
                 {
-                    Logger.Info("Waiting for a connection... ");
-
-                    IConnection connection = bootstrap.HandleIncomingConnection();
-
-                    if (connection != null)
-                    {
-                        Logger.Info("Connected!");
-                        connection.SendPacket(new PacketPing(DateTimeOffset.Now.ToUnixTimeMilliseconds()));
-                        Logger.Info("Packet has been sent successfully!");
-                    }
-
                     System.Threading.Thread.Sleep(2000);
-                    connection.Read();
+                    foreach (IConnection connection in ConnectionHandler.GetConnections())
+                    {
+                        connection.Read();
+                    }
                 }
             }
-            catch (SocketException excepction)
+            catch (SocketException exception)
             {
-                Logger.Info("SocketException: {0}", new object[] { excepction });
+                Logger.Info("SocketException: {0}", new object[] { exception });
             }
             finally
             {
