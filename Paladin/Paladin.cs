@@ -8,29 +8,34 @@ namespace Paladin
     class Paladin
     {
         public static readonly Logger Logger = Logger.LOGGER;
+        public static Client.Client Client;
+        public static ChatManager ChatManager;
 
         static void Main(string[] args)
         {
 
-            Client.Client client = new Client.Client(Guid.NewGuid(), "Paladin");
+            Client = new Client.Client(Guid.NewGuid(), "Paladin");
+            ChatManager = new ChatManager();
 
             try
             {
-                client.Connect(20000);
+                Client.Connect(20000);
 
-                client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterInboundWithHandler(0x00, new PingCodec(), new PacketPing().GetType(), new PacketPingHandler());
-                client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterInboundWithHandler(0x01, new PacketResponse(), new PacketResponse().GetType(), new PacketResponse());
-                client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterOutbound(0x00, new PongCodec(), new PacketPong().GetType());
-                client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterOutbound(0x01, new PacketRequest(), new PacketRequest().GetType());
+                Client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterInboundWithHandler(0x00, new PingCodec(), new PacketPing().GetType(), new PacketPingHandler());
+                Client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterInboundWithHandler(0x01, new PacketResponse(), new PacketResponse().GetType(), new PacketResponse());
+                Client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterOutbound(0x00, new PongCodec(), new PacketPong().GetType());
+                Client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterOutbound(0x01, new PacketRequest(), new PacketRequest().GetType());
+                Client.Connection.GetCurrentProtocol().ProtocolRegistry.RegisterOutbound(0x02, new PacketChat(), new PacketChat().GetType());
 
                 System.Threading.Thread.Sleep(1000);
 
-                client.Connection.SendPacket(new PacketRequest(client.Name, client.Uuid));
+                Client.Connection.SendPacket(new PacketRequest(Client.Name, Client.Uuid));
+
                 Logger.Info("Request to connect to server has been successfully sent. Awaiting response...");
 
-                while (client.Connection.GetClient().Connected)
+                while (Client.Connection.GetClient().Connected)
                 {
-                    client.Connection.Read();
+                    Client.Connection.Read();
                     System.Threading.Thread.Sleep(2000);
                 }
             }
@@ -44,7 +49,7 @@ namespace Paladin
             }
             finally
             {
-                client.Connection.GetClient().Close();
+                Client.Connection.GetClient().Close();
             }
 
             Console.WriteLine("\n Press Enter to continue...");

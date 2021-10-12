@@ -3,7 +3,7 @@ using PacketLibrary.Network;
 
 namespace Server.Network
 {
-    public class PacketResponse : Packet, ICodec
+    public class PacketResponse : Packet, ICodec, IPacketHandler
     {
         static readonly Logger Logger = Logger.LOGGER;
 

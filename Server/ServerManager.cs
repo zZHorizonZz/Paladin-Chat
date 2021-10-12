@@ -35,6 +35,7 @@ namespace Server
             Bootstrap.DefaultProtocol.ProtocolRegistry.RegisterOutbound(0x01, new PacketResponse(), new PacketResponse().GetType());
             Bootstrap.DefaultProtocol.ProtocolRegistry.RegisterInboundWithHandler(0x00, new PongCodec(), new PacketPong().GetType(), new PacketPongHandler());
             Bootstrap.DefaultProtocol.ProtocolRegistry.RegisterInboundWithHandler(0x01, new PacketRequest(), new PacketRequest().GetType(), new PacketRequest());
+            Bootstrap.DefaultProtocol.ProtocolRegistry.RegisterInboundWithHandler(0x02, new PacketChat(), new PacketChat().GetType(), new PacketChat());
 
             if (Bootstrap.DefaultProtocol.ProtocolRegistry.GetPacketHandler(new PacketPong().GetType()) == null)
             {

@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="chat\ChatManager.cs" />
     <Compile Include="client\Client.cs" />
     <Compile Include="client\ClientContainer.cs" />
     <Compile Include="client\ClientHandler.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="PacketPong.cs" />
     <Compile Include="PacketPongHandler.cs" />
     <Compile Include="packet\client\PacketRequest.cs" />
+    <Compile Include="packet\client\PacketChat.cs" />
     <Compile Include="packet\server\PacketResponse.cs" />
     <Compile Include="PingCodec.cs" />
     <Compile Include="PongCodec.cs" />
